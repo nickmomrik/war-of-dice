@@ -1,9 +1,10 @@
 #include <Adafruit_NeoPixel.h>
 
 // Must be at least 8x4
-#define PIXEL_W 8
-#define PIXEL_H 4
-#define PIN     6
+#define PIXEL_W    8
+#define PIXEL_H    4
+#define PIN        6
+#define UNUSED_PIN 8 // For random seed
 
 int p_rgb[][3] = {
   {32, 0, 0},
@@ -11,6 +12,7 @@ int p_rgb[][3] = {
 };
 int sep_rgb[3] = {0, 16, 0};
 int scr_rgb[3] = {32, 32, 32};
+int use_pips = 6; // Can use 1-9
 
 // Each pip is on or off
 // Only going to use 6, but give blank plus 1-9 pip die in case it's ever needed
@@ -45,17 +47,8 @@ int pixel_from_player_pip(int p, int pip) {
 }
 
 void print_die(int p, int num_pips = 9) {
-  switch (num_pips) {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 9:
-      break;
-    default:
-      num_pips = 0;
+  if (num_pips > use_pips) {
+    num_pips = 0;
   }
 
   // Light up the pips
@@ -72,6 +65,8 @@ void print_die(int p, int num_pips = 9) {
 }
 
 void setup() {
+  randomSeed(analogRead(UNUSED_PIN));
+  
   pixels.begin();
   Serial.begin(9600);
 
@@ -90,9 +85,12 @@ void setup() {
 }
 
 void loop() {
-  for (int i = 0; i < 10; i++) {
-    print_die(1, i);
-    print_die(2, i);
-    delay(250);
-  }
+  print_die(1, random_pips());
+  print_die(2, random_pips());
+  delay(300);
 }
+
+int random_pips() {
+  return random(1, use_pips + 1);
+}
+
