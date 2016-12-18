@@ -212,6 +212,26 @@ void maybe_winner() {
   }
 }
 
+// Flash the winning die for the current round
+void highlight_round_winner() {
+  if (current_die[0] > current_die[1]) {
+    flash_player_die(1);
+  } else if (current_die[0] < current_die[1]) {
+    flash_player_die(2);
+  } else {
+    flash_player_die(1);
+    flash_player_die(2);
+  }
+}
+
+// Turn a players current die on/off
+void flash_player_die(int p) {
+  print_die(p, 0);
+  delay(100);
+  print_die(p, current_die[p - 1]);
+  delay(100);
+}
+
 // Prepare everything for a new game
 void new_game() {
   game_started = true;
@@ -265,7 +285,7 @@ void loop() {
         if (!round_rolls_done()) {
           maybe_roll(1);
           maybe_roll(2);
-          delay(150);
+          delay(200);
         } else {
           update_score();
         }
@@ -287,6 +307,8 @@ void loop() {
       }
     } else if (button_state()) {
       new_round();
+    } else {
+      highlight_round_winner();
     }
   } else {
     maybe_winner();
