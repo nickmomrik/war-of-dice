@@ -3,8 +3,11 @@
 // Must be at least 8x4
 #define PIXEL_W    8
 #define PIXEL_H    4
-#define PIN        6
-#define UNUSED_PIN 8 // For random seed
+
+#define PIXEL_PIN  6
+#define UNUSED_PIN 8  // For random seed
+#define P1_PIN     18
+#define P2_PIN     19
 
 int p_rgb[][3] = {
   {32, 0, 0},
@@ -29,7 +32,7 @@ int pips[][9] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_W * PIXEL_H, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_W * PIXEL_H, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 int pixel(int x, int y) {
   return y * PIXEL_W + x;
@@ -47,7 +50,9 @@ int pixel_from_player_pip(int p, int pip) {
 }
 
 void print_die(int p, int num_pips = 9) {
-  if (num_pips > use_pips) {
+  if (num_pips > 9) {
+    num_pips = 9;
+  } else if (num_pips < 0) {
     num_pips = 0;
   }
 
@@ -66,9 +71,12 @@ void print_die(int p, int num_pips = 9) {
 
 void setup() {
   randomSeed(analogRead(UNUSED_PIN));
+
+  pinMode(P1_PIN, INPUT_PULLUP);
+  pinMode(P2_PIN, INPUT_PULLUP);
   
   pixels.begin();
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   // display a separator in the middle
   int sep_lines =  (PIXEL_W - 6) % 2 ? 1 : 2;
@@ -85,8 +93,13 @@ void setup() {
 }
 
 void loop() {
-  print_die(1, random_pips());
-  print_die(2, random_pips());
+  if (LOW == digitalRead(P1_PIN)) {
+    print_die(1, random_pips());
+  }
+  if (LOW == digitalRead(P2_PIN)) {
+    print_die(2, random_pips());
+  }
+
   delay(300);
 }
 
