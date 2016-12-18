@@ -1,4 +1,6 @@
-// Hardware Config
+/*******************
+ * Hardware Config *
+ *******************/
 
 #define PIXEL_W    8  // Grid must be at least 8x4 to work properly
 #define PIXEL_H    4
@@ -7,17 +9,26 @@
 #define P1_PIN     18
 #define P2_PIN     19
 
-// Software Config
+/******************* 
+ * Software Config *
+ *******************/
 
+// Colors of the dice
 int p_rgb[][3] = {
-  {32, 0, 0},      // Player 1 colors
-  {0, 0, 16}       // Player 2 colors
+  // Player 1 (red)
+  {32, 0, 0},
+  // Player 2 (blue)
+  {0, 0, 16}
 };
+
+// Color of the line separating the two dice (green)
 int sep_rgb[3] = {0, 16, 0};
+
+// Color of the scoreboard (white)
 int scr_rgb[3] = {32, 32, 32};
 
 // Default to a typical die, but can be up to 9
-// Using 2 would essentially be like doing coin flips
+// Use 2 to simulate coin flips!
 int use_pips = 6;
 
 /********************
@@ -41,27 +52,27 @@ int pips[][9] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
-// Keep track of various parts of the game state
+// Various parts of the game state
 bool game_started;
 bool round_started;
 int current_die[2];
 int score[2];
 bool rolling[2];
 
-// Setup the neopixels
+// Prepare the neopixel grid
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_W * PIXEL_H, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-// Determine the neopixel by grid coordinates
+// Determines the neopixel by grid coordinates
 int pixel(int x, int y) {
   return y * PIXEL_W + x;
 }
 
-// Determine the neopixel by the the player and the corresponding 3x3 (pips 0-8) die coordinates
+// Determines the neopixel by the the player and the corresponding 3x3 (pips 0-8) die coordinates
 int pixel_from_player_pip(int p, int pip) {
   int y = pip / 3;
   int x = pip % 3;
 
-  // Player 2 is in the upper right corner, so the x needs on affset
+  // Player 2 is in the upper right corner, so offset the x
   if (2 == p) {
     x = x + PIXEL_W - 3;
   }
@@ -89,7 +100,7 @@ void print_die(int p, int num_pips = 9) {
   }
 }
 
-// value of the die needs to be random
+// Gets a random value to use for a die
 int random_pips() {
   return random(1, use_pips + 1);
 }
@@ -132,12 +143,12 @@ void maybe_roll(int p) {
   }
 }
 
-// Have both players die stoped?
+// Have both dice stoped?
 bool round_rolls_done() {
   return (current_die[0] > 0 && current_die[1] > 0);
 }
 
-// Returns the maximum game score needed to win
+// Score needed to win the game
 int max_score() {
   return PIXEL_W / 2;
 }
@@ -155,13 +166,14 @@ int winner() {
   }
 }
 
-// Light up the player's score according to the value
+// Show how many rounds a player has won
 void display_score(int p, int score) {
   int y = PIXEL_H - 1;
   int x;
   int max_sc = max_score();
 
   for (int i = 0; i < max_sc; i++) {
+    // Player 1 score goes from left to right and player 2 from right to left. Race to the middle.
     if (1 == p) {
       x = i;      
     } else if (2 == p) {
@@ -177,7 +189,7 @@ void display_score(int p, int score) {
   } 
 }
 
-// Determines the round winner, increases the score, and updates the display
+// Determine the round winner, increase the score, and update the display
 void update_score() {
   if (current_die[0] > current_die[1]) {
     score[0]++;
@@ -195,7 +207,7 @@ void update_score() {
   round_started = false;
 }
 
-// If there is a winner, flash their scoreboard
+// If there is a winner, flash their score
 void maybe_winner() {
   int win_p = winner();
 
@@ -212,7 +224,7 @@ void maybe_winner() {
   }
 }
 
-// Flash the winning die for the current round
+// Will flash the winning die or both if tied
 void highlight_round_winner() {
   if (current_die[0] > current_die[1]) {
     flash_player_die(1);
@@ -224,7 +236,7 @@ void highlight_round_winner() {
   }
 }
 
-// Turn a players current die on/off
+// Flash a players current die on/off
 void flash_player_die(int p) {
   print_die(p, 0);
   delay(100);
@@ -243,9 +255,10 @@ void new_game() {
   print_die(1, 9);
   print_die(2, 9);
 
-  // Clear scores
-  display_score(1, 0);
-  display_score(2, 0);
+  // Fill scores
+  int max_sc = max_score();
+  display_score(1, max_sc);
+  display_score(2, max_sc);
 }
 
 // Prepare everything for a new round
@@ -253,6 +266,12 @@ void new_round() {
   round_started = true;
   rolling[0] = rolling[1] = false;
   current_die[0] = current_die[1] = 0;
+
+  // Clear scores if it's the first round
+  if (0 == score[0] && 0 == score[1]) {
+    display_score(1, 0);
+    display_score(2, 0);
+  }
 }
 
 void setup() {
@@ -307,7 +326,7 @@ void loop() {
       }
     } else if (button_state()) {
       new_round();
-    } else {
+    } else if (current_die[0]) {
       highlight_round_winner();
     }
   } else {
