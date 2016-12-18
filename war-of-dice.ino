@@ -1,4 +1,5 @@
 // Hardware Config
+
 #define PIXEL_W    8  // Grid must be at least 8x4 to work properly
 #define PIXEL_H    4
 #define PIXEL_PIN  6
@@ -7,13 +8,17 @@
 #define P2_PIN     19
 
 // Software Config
+
 int p_rgb[][3] = {
-  {32, 0, 0},
-  {0, 0, 16}
+  {32, 0, 0},      // Player 1 colors
+  {0, 0, 16}       // Player 2 colors
 };
 int sep_rgb[3] = {0, 16, 0};
 int scr_rgb[3] = {32, 32, 32};
-int use_pips = 6; // Can use 1-9
+
+// Default to a typical die, but can be up to 9
+// Using 2 would essentially be like doing coin flips
+int use_pips = 6;
 
 /********************
  * End of Config    *
@@ -22,8 +27,7 @@ int use_pips = 6; // Can use 1-9
 
 #include <Adafruit_NeoPixel.h>
 
-// Each pip is on or off
-// Only going to use 6, but give blank plus 1-9 pip die in case it's ever needed
+// Which pips should be on/off for each 0-9 value
 int pips[][9] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 1, 0, 0, 0, 0},
@@ -37,23 +41,27 @@ int pips[][9] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
-// Always start with a new game
+// Keep track of various parts of the game state
 bool game_started;
 bool round_started;
 int current_die[2];
 int score[2];
 bool rolling[2];
 
+// Setup the neopixels
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_W * PIXEL_H, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
+// Determine the neopixel by grid coordinates
 int pixel(int x, int y) {
   return y * PIXEL_W + x;
 }
 
+// Determine the neopixel by the the player and the corresponding 3x3 (pips 0-8) die coordinates
 int pixel_from_player_pip(int p, int pip) {
   int y = pip / 3;
   int x = pip % 3;
 
+  // Player 2 is in the upper right corner, so the x needs on affset
   if (2 == p) {
     x = x + PIXEL_W - 3;
   }
@@ -61,6 +69,7 @@ int pixel_from_player_pip(int p, int pip) {
   return pixel(x, y);
 }
 
+// Turn the individual pixels of a die on/off according to the pip value
 void print_die(int p, int num_pips = 9) {
   if (num_pips > 9) {
     num_pips = 9;
@@ -68,7 +77,6 @@ void print_die(int p, int num_pips = 9) {
     num_pips = 0;
   }
 
-  // Light up the pips
   for (int i = 0; i < 9; i++) {
     int px = pixel_from_player_pip(p, i);
 
@@ -81,21 +89,25 @@ void print_die(int p, int num_pips = 9) {
   }
 }
 
+// value of the die needs to be random
 int random_pips() {
   return random(1, use_pips + 1);
 }
 
+// Simple way to for the die to keep rolling after the player lets go
 bool stopped_rolling() {
   return (1 == random(0, 5));
 }
 
-int random_die(int p) {
+// Show the die
+int display_random_die(int p) {
   int value = random_pips();
   print_die(p, value);
 
   return value;
 }
 
+// Are buttons being pressed?
 bool button_state(int p = 0) {
   bool p1_state = (LOW == digitalRead(P1_PIN));
   bool p2_state = (LOW == digitalRead(P2_PIN));
@@ -109,24 +121,28 @@ bool button_state(int p = 0) {
   }
 }
 
+// If a die hasn't stopped rolling either update the value or stop it and save the value
 void maybe_roll(int p) {
   if (0 == current_die[p - 1]) {
     if (button_state(p) || !stopped_rolling()) {
-      random_die(p);
+      display_random_die(p);
     } else {
-      current_die[p - 1] = random_die(p);
+      current_die[p - 1] = display_random_die(p);
     }
   }
 }
 
+// Have both players die stoped?
 bool round_rolls_done() {
   return (current_die[0] > 0 && current_die[1] > 0);
 }
 
+// Returns the maximum game score needed to win
 int max_score() {
   return PIXEL_W / 2;
 }
 
+// Returns the winning player number or 0 if nobody has won yet
 int winner() {
   int max_sc = max_score();
   
@@ -139,6 +155,7 @@ int winner() {
   }
 }
 
+// Light up the player's score according to the value
 void display_score(int p, int score) {
   int y = PIXEL_H - 1;
   int x;
@@ -160,6 +177,7 @@ void display_score(int p, int score) {
   } 
 }
 
+// Determines the round winner, increases the score, and updates the display
 void update_score() {
   if (current_die[0] > current_die[1]) {
     score[0]++;
@@ -177,6 +195,7 @@ void update_score() {
   round_started = false;
 }
 
+// If there is a winner, flash their scoreboard
 void maybe_winner() {
   int win_p = winner();
 
@@ -184,17 +203,17 @@ void maybe_winner() {
     int max_sc = max_score();
     for (int i = 0; i < max_sc; i++) {
       display_score(win_p, i);
-      delay(200);
+      delay(100);
     }
     for (int i = max_sc; i >= 0; i--) {
       display_score(win_p, i);
-      delay(200);
+      delay(100);
     }
   }
 }
 
+// Prepare everything for a new game
 void new_game() {
-  // Reset stat variables
   game_started = true;
   round_started = false;
   current_die[0] = current_die[1] = score[0] = score[1] = 0;
@@ -209,6 +228,7 @@ void new_game() {
   display_score(2, 0);
 }
 
+// Prepare everything for a new round
 void new_round() {
   round_started = true;
   rolling[0] = rolling[1] = false;
@@ -216,6 +236,7 @@ void new_round() {
 }
 
 void setup() {
+  // Make sure everything is really random
   randomSeed(analogRead(UNUSED_PIN));
 
   pinMode(P1_PIN, INPUT_PULLUP);
@@ -223,7 +244,7 @@ void setup() {
   
   pixels.begin();
 
-  // display a separator in the middle
+  // display a separator in the middle of the scoreboard
   int sep_lines =  (PIXEL_W - 6) % 2 ? 1 : 2;
   for (int i = 0; i < sep_lines; i++) {
     int x = PIXEL_W / 2 - i;
@@ -240,15 +261,16 @@ void loop() {
   if (game_started) {
     if (round_started) {
       if (rolling[0] && rolling[1]) {
+        // Continue updating the dice or determine if there is a round winner
         if (!round_rolls_done()) {
           maybe_roll(1);
           maybe_roll(2);
+          delay(150);
         } else {
           update_score();
         }
-      
-        delay(300);
       } else {
+        // Read to start a new round. Both players must press their button to start the rolls.
         print_die(1, 0);
         print_die(2, 0);
         delay(100);
@@ -269,6 +291,7 @@ void loop() {
   } else {
     maybe_winner();
 
+    // Hold any button while the winning score is flashing until a new game starts
     if (button_state()) {
       new_game();
     }
