@@ -319,10 +319,8 @@ void loop() {
         print_die(2, 9);
         delay(100);
 
-        if (button_state(1)) {
+        if (button_state(1) && button_state(2)) {
           rolling[0] = true;
-        }
-        if (button_state(2)) {
           rolling[1] = true;
         }
       }
