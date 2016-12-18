@@ -309,7 +309,9 @@ void loop() {
           update_score();
         }
       } else {
-        // Read to start a new round. Both players must press their button to start the rolls.
+        // Ready to start a new round
+        // Both players must press their button to start the rolls
+        // Flash between solid and empty dice
         print_die(1, 0);
         print_die(2, 0);
         delay(100);
