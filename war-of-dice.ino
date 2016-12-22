@@ -2,12 +2,20 @@
  * Hardware Config *
  *******************/
 
-#define PIXEL_W    8  // Grid must be at least 8x4 to work properly
+// In theory 7x4 and larger should work
+// Only tested on 8x4
+#define PIXEL_W    8
 #define PIXEL_H    4
+
+// What pin controls your Neopixels?
 #define PIXEL_PIN  6
-#define UNUSED_PIN 20 // For random seed
+
+// Where are the player buttons?
 #define P1_PIN     18
 #define P2_PIN     19
+
+ // Any unused pin - for random seed
+#define UNUSED_PIN 20
 
 /******************* 
  * Software Config *
@@ -17,6 +25,7 @@
 int p_rgb[][3] = {
   // Player 1 (red)
   {3, 0, 0},
+
   // Player 2 (blue)
   {0, 0, 3}
 };
@@ -27,16 +36,17 @@ int sep_rgb[3] = {0, 3, 0};
 // Color of the scoreboard (white)
 int scr_rgb[3] = {3, 3, 3};
 
-// Default to a typical die, but can be up to 9
+// Default to a typical die, but can be 2-9
 // Use 2 to simulate coin flips!
 int use_pips = 6;
 
 // If true, access the Neopixels in reverse
-//  - 1st becomes last and last becomes 1st
+// Then 1st becomes last and last becomes 1st
 bool reverse_pixels = false;
 
 /********************
  * End of Config    *
+ *                  *
  * Don't edit below *
  ********************/
 
