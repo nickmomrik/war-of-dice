@@ -298,6 +298,10 @@ void setup() {
   // Make sure everything is really random
   randomSeed(analogRead(UNUSED_PIN));
 
+  if (!(2 <= use_pips && use_pips <= 9)) {
+    use_pips = 6;
+  }
+
   pinMode(P1_PIN, INPUT_PULLUP);
   pinMode(P2_PIN, INPUT_PULLUP);
   
