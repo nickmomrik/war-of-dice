@@ -16,16 +16,16 @@
 // Colors of the dice
 int p_rgb[][3] = {
   // Player 1 (red)
-  {32, 0, 0},
+  {3, 0, 0},
   // Player 2 (blue)
-  {0, 0, 16}
+  {0, 0, 3}
 };
 
 // Color of the line separating the two dice (green)
-int sep_rgb[3] = {0, 16, 0};
+int sep_rgb[3] = {0, 3, 0};
 
 // Color of the scoreboard (white)
-int scr_rgb[3] = {32, 32, 32};
+int scr_rgb[3] = {3, 3, 3};
 
 // Default to a typical die, but can be up to 9
 // Use 2 to simulate coin flips!
