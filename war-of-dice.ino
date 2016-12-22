@@ -31,6 +31,10 @@ int scr_rgb[3] = {3, 3, 3};
 // Use 2 to simulate coin flips!
 int use_pips = 6;
 
+// If true, access the Neopixels in reverse
+//  - 1st becomes last and last becomes 1st
+bool reverse_pixels = false;
+
 /********************
  * End of Config    *
  * Don't edit below *
@@ -64,7 +68,13 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_W * PIXEL_H, PIXEL_PIN, NEO_G
 
 // Determines the neopixel by grid coordinates
 int pixel(int x, int y) {
-  return y * PIXEL_W + x;
+  int px = y * PIXEL_W + x;
+
+  if (reverse_pixels) {
+    px = PIXEL_W * PIXEL_H - px - 1;
+  }
+  
+  return px;
 }
 
 // Determines the neopixel by the the player and the corresponding 3x3 (pips 0-8) die coordinates
