@@ -8,3 +8,5 @@ Parts I used:
  * [Tactile Buttons](https://www.adafruit.com/products/367)
 
 See the [Fritzing](./war-of-dice.fzz) for setup.
+
+There is a [demo video on my blog](https://nickmomrik.com/2016/12/22/i-created-a-game/).
