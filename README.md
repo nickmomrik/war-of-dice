@@ -9,4 +9,6 @@ Parts I used:
 
 See the [Fritzing](./war-of-dice.fzz) for setup.
 
+![War of Dice Fritzing](./war-of-dice-fritzing.png?raw=true "War of Dice Fritzing")
+
 There is a [demo video on my blog](https://nickmomrik.com/2016/12/22/i-created-a-game/).
